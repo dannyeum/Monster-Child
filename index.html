@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>몬스터 차일드 · 온책읽기 활동</title>
+<style>
+  :root{
+    --bg:#f4f1ec; --card:#ffffff; --ink:#2b2b33; --muted:#7a7686;
+    --accent:#6b4cc4; --accent2:#a06bd6; --line:#e3ddd3; --ok:#2f9e6f; --warn:#c4562f;
+    --shadow:0 6px 20px rgba(60,40,90,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6}
+  header.top{background:linear-gradient(135deg,#3a2b5c,#6b4cc4);color:#fff;padding:18px 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header.top h1{font-size:19px;margin:0;letter-spacing:.5px}
+  header.top .tags{font-size:12px;opacity:.85;margin-top:3px}
+  .mode-switch{display:flex;gap:8px}
+  .mode-switch button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);
+    padding:7px 14px;border-radius:20px;cursor:pointer;font-size:13px}
+  .mode-switch button.active{background:#fff;color:var(--accent)}
+  main{max-width:820px;margin:0 auto;padding:20px 16px 80px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px;
+    box-shadow:var(--shadow)}
+  .card h2{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .card .step{background:var(--accent);color:#fff;font-size:12px;border-radius:50%;width:24px;height:24px;
+    display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .card p.desc{color:var(--muted);font-size:14px;margin:2px 0 14px}
+  label{font-size:14px;font-weight:600;display:block;margin:12px 0 6px}
+  input[type=text],textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+    font-size:15px;font-family:inherit;background:#fdfcfa;color:var(--ink)}
+  textarea{resize:vertical;min-height:80px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row > div{flex:1;min-width:120px}
+  .check{display:flex;align-items:flex-start;gap:9px;background:#faf8f4;border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;margin:7px 0;cursor:pointer;font-weight:500;font-size:14px}
+  .check input{margin-top:3px;width:18px;height:18px;flex:0 0 auto;accent-color:var(--accent)}
+  .namecard{border:2px dashed var(--accent2);border-radius:14px;padding:14px;margin:12px 0;background:#faf7fd}
+  .namecard h3{margin:0 0 8px;font-size:14px;color:var(--accent)}
+  .canvas-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;touch-action:none}
+  canvas{display:block;width:100%;height:auto;cursor:crosshair;background:#fff}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .tools button,.tools .swatch{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;
+    cursor:pointer;font-size:13px}
+  .swatch{width:26px;height:26px;padding:0;border-radius:50%}
+  .swatch.sel{outline:3px solid var(--accent);outline-offset:1px}
+  .primary{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px 22px;font-size:16px;
+    font-weight:700;cursor:pointer;width:100%}
+  .primary:disabled{opacity:.5;cursor:not-allowed}
+  .ghost{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 16px;cursor:pointer;font-size:14px}
+  .banner{border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:16px}
+  .banner.warn{background:#fdeee7;border:1px solid #f0c3ab;color:var(--warn)}
+  .banner.ok{background:#e7f6ef;border:1px solid #b5e0cc;color:var(--ok)}
+  .banner.info{background:#eef0fb;border:1px solid #c7cdf0;color:#4a44a0}
+  .hidden{display:none!important}
+  .relmap{font-size:13px;color:var(--muted);background:#faf8f4;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b2b33;color:#fff;
+    padding:12px 20px;border-radius:30px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:99}
+  .toast.show{opacity:1}
+  /* teacher */
+  .sub-list{display:flex;flex-direction:column;gap:8px}
+  .sub-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;cursor:pointer;background:#fff}
+  .sub-item:hover{background:#faf7fd}
+  .sub-item .who{font-weight:600}
+  .sub-item .when{font-size:12px;color:var(--muted)}
+  .detail-block{border-top:1px solid var(--line);padding:12px 0}
+  .detail-block .q{font-weight:600;font-size:14px;color:var(--accent)}
+  .detail-block .a{white-space:pre-wrap;font-size:14px;margin-top:4px}
+  .detail-block img{max-width:100%;border:1px solid var(--line);border-radius:10px;margin-top:6px}
+  .pill{display:inline-block;background:#eef0fb;color:#4a44a0;border-radius:20px;padding:2px 10px;font-size:12px;margin:2px 4px 2px 0}
+  code.k{background:#f0edf8;padding:1px 6px;border-radius:5px;font-size:13px}
+  a{color:var(--accent)}
+  .prog{display:inline-block;height:8px;border-radius:5px;background:#e3ddd3;width:90px;vertical-align:middle;overflow:hidden}
+  .prog > i{display:block;height:100%;background:var(--accent)}
+  .sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+  .sum-cell{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;background:#faf8f4}
+  .sum-cell b{font-size:14px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>📖 몬스터 차일드 · 온책읽기 활동</h1>
+    <div class="tags">#차별과편견 #질병 #우정 #초등국어 6-2</div>
+  </div>
+  <div class="mode-switch">
+    <button id="btnStudent" class="active" onclick="setMode('student')">학생</button>
+    <button id="btnTeacher" onclick="setMode('teacher')">교사</button>
+  </div>
+</header>
+
+<main>
+  <!-- ===== 설정 경고 ===== -->
+  <div id="configWarn" class="banner warn hidden">
+    ⚠️ Firebase 설정이 아직 입력되지 않았습니다. 파일 상단 <code class="k">firebaseConfig</code> 값을 채우면 저장이 켜집니다.
+    지금은 <b>연습 모드</b>로, 작성은 되지만 서버에 저장되지 않습니다.
+  </div>
+
+  <!-- ============ 학생 화면 ============ -->
+  <section id="studentView">
+    <!-- 표지/소개 -->
+    <div class="card">
+      <h2>몬스터 차일드 이야기</h2>
+      <p class="desc" style="margin-bottom:8px">
+        돌연변이종양 증후군(MCS). 어린 시기에 발병해 발작과 신체 변이를 일으키고, 어린아이를 괴물로 만든다고 해서
+        사람들은 ‘몬스터 차일드’ 증후군이라 부릅니다.
+      </p>
+      <p class="desc" style="font-style:italic;color:var(--accent)">
+        “남들이 나를 뭐라고 부르든 상관없어. 나는 그냥 나, 오하늬니까.”
+      </p>
+      <p class="desc">돌연변이종양 증후군을 가진 아이, 하늬의 이야기를 읽고 아래 활동을 해 봅시다.</p>
+
+      <label>학년</label>
+      <div class="row">
+        <div><input type="text" id="s_grade" placeholder="학년 (예: 6)" /></div>
+        <div><input type="text" id="s_class" placeholder="반 (예: 3)" /></div>
+        <div><input type="text" id="s_num" placeholder="번호 (예: 12)" /></div>
+      </div>
+      <label>이름</label>
+      <input type="text" id="s_name" placeholder="이름을 적어 주세요" />
+    </div>
+
+    <!-- 1. 경험 떠올리기 -->
+    <div class="card">
+      <h2><span class="step">1</span> 나의 경험 떠올리기</h2>
+      <p class="desc">다음을 읽고, 나에게 해당되는 것에 체크해 봅시다.</p>
+      <label class="check"><input type="checkbox" data-exp="0" /> 친구들에게 말하기 어려운 나만의 비밀을 가져본 적이 있다.</label>
+      <label class="check"><input type="checkbox" data-exp="1" /> 나와 비슷해 보이지만 쉽게 다가갈 수 없는 친구가 있던 적이 있다.</label>
+      <label class="check"><input type="checkbox" data-exp="2" /> 나는 내가 바꿀 수 없는 점 때문에 스스로가 싫었던 적이 있다.</label>
+      <label class="check"><input type="checkbox" data-exp="3" /> 나와 조금 다른 친구에게 거리를 뒀던 적이 있다.</label>
+      <label class="check"><input type="checkbox" data-exp="4" /> 내가 다른 모습으로 변한다면 어떨지 생각해 본 적이 있다.</label>
+      <label>내가 바꿀 수 없는 것으로 다른 사람들이 나를 싫어한다면, 어떤 기분이 들 것 같나요?</label>
+      <textarea id="q_feel" placeholder="자유롭게 적어 봅시다."></textarea>
+      <label>바꿀 수 없는 부분을 가지고 다른 사람을 차별하는 것은 옳은 일일까요? 나의 생각은?</label>
+      <textarea id="q_fair" placeholder="자유롭게 적어 봅시다."></textarea>
+    </div>
+
+    <!-- 2. 인물 관계 -->
+    <div class="card">
+      <h2><span class="step">2</span> 등장인물의 관계 파악하기</h2>
+      <p class="desc">인물들이 서로에게 느끼는 감정을 정리해 봅시다.</p>
+      <div class="relmap">등장인물 예: 오하늬 · 강연우 · 강박사(소장님) · 승아 · 하늬 엄마 · 반 친구들 · 동네 주민들</div>
+      <label>인물과 인물 사이의 관계·감정을 적어 봅시다.</label>
+      <textarea id="q_rel" placeholder="예) 오하늬 → 연우 : 처음엔 경계했지만 점점 …&#10;예) 반 친구들 → 하늬 : …" style="min-height:130px"></textarea>
+    </div>
+
+    <!-- 3. 인물·사건·배경 -->
+    <div class="card">
+      <h2><span class="step">3</span> 인물 · 사건 · 배경 파악하기</h2>
+      <p class="desc">『몬스터 차일드』를 읽으며 등장하는 인물과 사건, 배경을 찾아봅시다.</p>
+      <label>인물</label>
+      <textarea id="q_char" placeholder="이야기에 나오는 인물들"></textarea>
+      <label>사건</label>
+      <textarea id="q_event" placeholder="이야기에서 일어난 중요한 사건"></textarea>
+      <label>배경</label>
+      <textarea id="q_setting" placeholder="이야기가 펼쳐지는 시간·장소"></textarea>
+    </div>
+
+    <!-- 4. 인물 명함 -->
+    <div class="card">
+      <h2><span class="step">4</span> 등장인물 명함 만들기</h2>
+      <p class="desc">인물의 특성을 파악하여 명함을 만들어 봅시다.</p>
+      <div id="cards"></div>
+    </div>
+
+    <!-- 5. 변이한 모습 그리기 -->
+    <div class="card">
+      <h2><span class="step">5</span> 나의 변이한 모습 상상하기</h2>
+      <p class="desc">내가 MCS 환자라면 어떤 모습으로 변이할 것 같은지 상상하여 그려 봅시다.</p>
+      <div class="canvas-wrap"><canvas id="canvasMut" width="720" height="440"></canvas></div>
+      <div class="tools" data-canvas="canvasMut"></div>
+    </div>
+
+    <!-- 6. 편지 쓰기 -->
+    <div class="card">
+      <h2><span class="step">6</span> 주인공에게 편지 쓰기</h2>
+      <p class="desc">등장인물 중 한 명을 골라 마음을 담은 편지를 적어 봅시다.</p>
+      <label>누구에게 쓸까요?</label>
+      <select id="q_letter_to">
+        <option value="">— 인물 선택 —</option>
+        <option>오하늬</option><option>강연우</option><option>강박사(소장님)</option>
+        <option>승아</option><option>하늬 엄마</option><option>직접 입력</option>
+      </select>
+      <input type="text" id="q_letter_to_custom" placeholder="직접 입력할 인물 이름" class="hidden" style="margin-top:8px" />
+      <label>편지 내용</label>
+      <textarea id="q_letter" placeholder="○○에게 …" style="min-height:150px"></textarea>
+    </div>
+
+    <!-- 7. 이어질 내용 -->
+    <div class="card">
+      <h2><span class="step">7</span> 이어질 내용 상상하기</h2>
+      <p class="desc">작가가 되어 질문에 답하며 이어질 내용을 상상해 봅시다.</p>
+      <label>Q. 사람들은 MCS 환자를 어떻게 생각할까요?</label>
+      <textarea id="q_next1"></textarea>
+      <label>Q. 강박사님과 연우, 승아는 어떻게 지내고 있을까요?</label>
+      <textarea id="q_next2"></textarea>
+      <label>이어질 내용에 어울리는 그림</label>
+      <div class="canvas-wrap"><canvas id="canvasNext" width="720" height="440"></canvas></div>
+      <div class="tools" data-canvas="canvasNext"></div>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <button class="primary" id="btnSave" onclick="submitWork()">📨 제출하기 (저장)</button>
+      <p class="desc" style="margin-top:10px">제출 후에도 같은 학년·반·번호로 다시 열면 이어서 쓸 수 있어요.</p>
+      <button class="ghost" style="margin-top:6px" onclick="loadMyWork()">내 작성 내용 불러오기</button>
+    </div>
+  </section>
+
+  <!-- ============ 교사 화면 ============ -->
+  <section id="teacherView" class="hidden">
+    <div class="card">
+      <h2>👩‍🏫 교사 취합</h2>
+      <p class="desc">학생들이 제출한 활동을 한눈에 모아 봅니다.</p>
+      <div id="teacherGate">
+        <label>교사 암호</label>
+        <input type="text" id="teacherPw" placeholder="암호 입력" />
+        <button class="ghost" style="margin-top:10px" onclick="teacherLogin()">열기</button>
+        <p class="desc" style="margin-top:6px">기본 암호는 파일 상단 <code class="k">TEACHER_PASSWORD</code> 에서 바꿀 수 있어요.</p>
+      </div>
+      <div id="teacherPanel" class="hidden">
+        <div class="row" style="align-items:center;margin-bottom:6px">
+          <div style="flex:2"><b id="subCount">0</b>명 제출</div>
+          <div style="flex:0;display:flex;gap:6px">
+            <button class="ghost" onclick="exportCSV()">CSV 내보내기</button>
+            <button class="ghost" onclick="refreshSubs()">새로고침</button>
+          </div>
+        </div>
+        <div id="classSummary"></div>
+        <label style="margin-top:14px">제출 현황 (누르면 상세)</label>
+        <div class="sub-list" id="subList" style="margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="card hidden" id="detailCard">
+      <button class="ghost" onclick="closeDetail()">← 목록으로</button>
+      <div id="detailBody" style="margin-top:12px"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- ================= Firebase + 앱 로직 ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ============================================================
+   ① 여기에 Firebase 콘솔에서 받은 config를 붙여넣으세요.
+      (안내문서 참고: firebase-설정안내.md)
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "여기에_붙여넣기",
+  authDomain: "여기에_붙여넣기",
+  projectId: "여기에_붙여넣기",
+  storageBucket: "여기에_붙여넣기",
+  messagingSenderId: "여기에_붙여넣기",
+  appId: "여기에_붙여넣기"
+};
+
+/* ② 교사 암호 (원하는 값으로 변경) */
+const TEACHER_PASSWORD = "monster";
+/* ================================================================ */
+
+const CONFIGURED = !String(firebaseConfig.apiKey).includes("여기에");
+let db = null;
+if (CONFIGURED) {
+  try { db = getFirestore(initializeApp(firebaseConfig)); }
+  catch(e){ console.error(e); }
+} else {
+  document.getElementById("configWarn").classList.remove("hidden");
+}
+
+/* ---------- 유틸 ---------- */
+const $ = id => document.getElementById(id);
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2200); }
+const CHARACTERS = ["오하늬","강연우","강박사(소장님)"];
+
+/* ---------- 인물 명함 3장 렌더 ---------- */
+const cardsWrap = $("cards");
+CHARACTERS.forEach((nm,i)=>{
+  const d=document.createElement("div"); d.className="namecard";
+  d.innerHTML=`<h3>몬스터 차일드 인물 명함 카드 ${i+1}</h3>
+    <label>이름</label><input type="text" data-card="${i}" data-f="name" value="${nm}">
+    <label>성격</label><input type="text" data-card="${i}" data-f="personality" placeholder="어떤 성격인가요?">
+    <label>행동</label><textarea data-card="${i}" data-f="action" placeholder="기억에 남는 행동"></textarea>`;
+  cardsWrap.appendChild(d);
+});
+
+/* ---------- 편지 대상 직접입력 토글 ---------- */
+$("q_letter_to").addEventListener("change",e=>{
+  $("q_letter_to_custom").classList.toggle("hidden", e.target.value!=="직접 입력");
+});
+
+/* ---------- 캔버스 그리기 ---------- */
+const COLORS=["#2b2b33","#c4562f","#e0a91b","#2f9e6f","#3f6fd8","#a06bd6","#ffffff"];
+function setupCanvas(id){
+  const cv=$(id), ctx=cv.getContext("2d");
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  let drawing=false, color="#2b2b33", size=4;
+  const pos=e=>{const r=cv.getBoundingClientRect();
+    const p=e.touches?e.touches[0]:e;
+    return {x:(p.clientX-r.left)*(cv.width/r.width), y:(p.clientY-r.top)*(cv.height/r.height)};};
+  const start=e=>{drawing=true;const{x,y}=pos(e);ctx.strokeStyle=color;ctx.lineWidth=size;
+    ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();};
+  const move=e=>{if(!drawing)return;const{x,y}=pos(e);ctx.lineTo(x,y);ctx.stroke();e.preventDefault();};
+  const end=()=>drawing=false;
+  cv.addEventListener("mousedown",start);cv.addEventListener("mousemove",move);
+  window.addEventListener("mouseup",end);
+  cv.addEventListener("touchstart",start,{passive:false});
+  cv.addEventListener("touchmove",move,{passive:false});
+  cv.addEventListener("touchend",end);
+  // 도구 UI
+  const bar=document.querySelector(`.tools[data-canvas="${id}"]`);
+  COLORS.forEach((c,idx)=>{const s=document.createElement("button");s.className="swatch"+(idx===0?" sel":"");
+    s.style.background=c; if(c==="#ffffff")s.style.border="1px solid #ccc";
+    s.title=c==="#ffffff"?"지우개(흰색)":c;
+    s.onclick=()=>{color=c;size=c==="#ffffff"?18:4;
+      bar.querySelectorAll(".swatch").forEach(x=>x.classList.remove("sel"));s.classList.add("sel");};
+    bar.appendChild(s);});
+  const clr=document.createElement("button");clr.textContent="전체 지우기";
+  clr.onclick=()=>{ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);};
+  bar.appendChild(clr);
+  return {isBlank:()=>false, data:()=>cv.toDataURL("image/png"),
+    load:url=>{if(!url)return;const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,cv.width,cv.height);im.src=url;}};
+}
+const canvasMut=setupCanvas("canvasMut");
+const canvasNext=setupCanvas("canvasNext");
+
+/* ---------- 데이터 수집/주입 ---------- */
+function collectData(){
+  const exp=[...document.querySelectorAll("[data-exp]")].map(c=>c.checked);
+  const cards=CHARACTERS.map((_,i)=>{
+    const o={}; document.querySelectorAll(`[data-card="${i}"]`).forEach(el=>o[el.dataset.f]=el.value); return o;});
+  let letterTo=$("q_letter_to").value;
+  if(letterTo==="직접 입력") letterTo=$("q_letter_to_custom").value;
+  return {
+    grade:$("s_grade").value.trim(), cls:$("s_class").value.trim(),
+    num:$("s_num").value.trim(), name:$("s_name").value.trim(),
+    experiences:exp, feel:$("q_feel").value, fair:$("q_fair").value,
+    relations:$("q_rel").value,
+    characters:$("q_char").value, events:$("q_event").value, setting:$("q_setting").value,
+    nameCards:cards,
+    drawingMutation:canvasMut.data(),
+    letterTo, letter:$("q_letter").value,
+    next1:$("q_next1").value, next2:$("q_next2").value,
+    drawingNext:canvasNext.data(),
+    updatedAt:new Date().toISOString()
+  };
+}
+function fillData(d){
+  $("s_grade").value=d.grade||""; $("s_class").value=d.cls||"";
+  $("s_num").value=d.num||""; $("s_name").value=d.name||"";
+  (d.experiences||[]).forEach((v,i)=>{const c=document.querySelector(`[data-exp="${i}"]`);if(c)c.checked=v;});
+  $("q_feel").value=d.feel||""; $("q_fair").value=d.fair||"";
+  $("q_rel").value=d.relations||"";
+  $("q_char").value=d.characters||""; $("q_event").value=d.events||""; $("q_setting").value=d.setting||"";
+  (d.nameCards||[]).forEach((o,i)=>Object.entries(o).forEach(([f,v])=>{
+    const el=document.querySelector(`[data-card="${i}"][data-f="${f}"]`);if(el)el.value=v;}));
+  canvasMut.load(d.drawingMutation);
+  if(d.letterTo){const sel=$("q_letter_to");
+    if([...sel.options].some(o=>o.value===d.letterTo)){sel.value=d.letterTo;}
+    else{sel.value="직접 입력";$("q_letter_to_custom").classList.remove("hidden");$("q_letter_to_custom").value=d.letterTo;}}
+  $("q_letter").value=d.letter||"";
+  $("q_next1").value=d.next1||""; $("q_next2").value=d.next2||"";
+  canvasNext.load(d.drawingNext);
+}
+function docId(d){ return `${d.grade}-${d.cls}-${d.num}-${d.name}`.replace(/[/#.$\[\]]/g,"_"); }
+
+/* ---------- 학생: 저장 ---------- */
+window.submitWork=async function(){
+  const d=collectData();
+  if(!d.grade||!d.cls||!d.num||!d.name){toast("학년·반·번호·이름을 먼저 채워 주세요");return;}
+  if(!CONFIGURED){toast("연습 모드: 작성은 되지만 저장은 안 돼요");return;}
+  const btn=$("btnSave"); btn.disabled=true; btn.textContent="저장 중…";
+  try{
+    await setDoc(doc(db,"submissions",docId(d)), d);
+    toast("제출 완료! 잘 저장되었어요 🎉");
+  }catch(e){console.error(e);toast("저장 실패: "+e.message);}
+  btn.disabled=false; btn.textContent="📨 제출하기 (저장)";
+};
+window.loadMyWork=async function(){
+  const g=$("s_grade").value.trim(),c=$("s_class").value.trim(),n=$("s_num").value.trim(),nm=$("s_name").value.trim();
+  if(!g||!c||!n||!nm){toast("학년·반·번호·이름을 먼저 채워 주세요");return;}
+  if(!CONFIGURED){toast("연습 모드에서는 불러올 수 없어요");return;}
+  try{
+    const snap=await getDoc(doc(db,"submissions",docId({grade:g,cls:c,num:n,name:nm})));
+    if(snap.exists()){fillData(snap.data());toast("불러왔어요!");}
+    else toast("저장된 내용이 없어요");
+  }catch(e){console.error(e);toast("불러오기 실패: "+e.message);}
+};
+
+/* ---------- 모드 전환 ---------- */
+window.setMode=function(m){
+  const st=m==="student";
+  $("studentView").classList.toggle("hidden",!st);
+  $("teacherView").classList.toggle("hidden",st);
+  $("btnStudent").classList.toggle("active",st);
+  $("btnTeacher").classList.toggle("active",!st);
+};
+
+/* ---------- 교사 ---------- */
+window.teacherLogin=function(){
+  if($("teacherPw").value!==TEACHER_PASSWORD){toast("암호가 달라요");return;}
+  $("teacherGate").classList.add("hidden");
+  $("teacherPanel").classList.remove("hidden");
+  refreshSubs();
+};
+let LAST_ITEMS=[];
+/* 7개 활동 완료도 계산 */
+function completion(d){
+  const t=s=>s&&String(s).trim().length>0;
+  const done=[
+    (d.experiences||[]).some(Boolean)||t(d.feel)||t(d.fair),   // 1
+    t(d.relations),                                            // 2
+    t(d.characters)||t(d.events)||t(d.setting),                // 3
+    (d.nameCards||[]).some(c=>t(c.personality)||t(c.action)),  // 4
+    d.drawingMutation&&!isBlankImg(d.drawingMutation),         // 5
+    t(d.letter),                                               // 6
+    t(d.next1)||t(d.next2)||(d.drawingNext&&!isBlankImg(d.drawingNext)) // 7
+  ];
+  return {done:done.filter(Boolean).length,total:7,flags:done};
+}
+/* 흰 캔버스면 미완성으로 취급 (dataURL 길이가 매우 짧음) */
+function isBlankImg(url){ return !url || url.length < 3000; }
+
+window.refreshSubs=async function(){
+  if(!CONFIGURED){toast("Firebase 설정 후 사용할 수 있어요");return;}
+  const list=$("subList"); list.innerHTML="불러오는 중…"; $("classSummary").innerHTML="";
+  try{
+    const snap=await getDocs(query(collection(db,"submissions"),orderBy("updatedAt","desc")));
+    const items=[]; snap.forEach(s=>items.push(s.data()));
+    LAST_ITEMS=items;
+    $("subCount").textContent=items.length;
+    list.innerHTML="";
+    if(!items.length){list.innerHTML='<p class="desc">아직 제출한 학생이 없어요.</p>';return;}
+    // 반별 요약
+    const byClass={};
+    items.forEach(d=>{const k=`${d.grade}-${d.cls}`;(byClass[k]=byClass[k]||[]).push(d);});
+    const cells=Object.entries(byClass).map(([k,arr])=>{
+      const avg=Math.round(arr.reduce((s,d)=>s+completion(d).done,0)/arr.length/7*100);
+      return `<div class="sum-cell"><b>${k}반</b><br>${arr.length}명 · 평균 ${avg}%</div>`;}).join("");
+    $("classSummary").innerHTML=`<div class="sum-grid">${cells}</div>`;
+    // 학생 목록 (완료도 표시)
+    items.forEach(d=>{
+      const c=completion(d), pct=Math.round(c.done/c.total*100);
+      const el=document.createElement("div");el.className="sub-item";
+      const when=d.updatedAt?new Date(d.updatedAt).toLocaleString("ko-KR"):"";
+      el.innerHTML=`<span class="who">${d.grade}-${d.cls}반 ${d.num}번 ${d.name}</span>
+        <span class="when"><span class="prog"><i style="width:${pct}%"></i></span> ${c.done}/7 · ${when}</span>`;
+      el.onclick=()=>showDetail(d); list.appendChild(el);
+    });
+  }catch(e){console.error(e);list.innerHTML='<p class="banner warn">불러오기 실패: '+e.message+'</p>';}
+};
+
+/* CSV 내보내기 (그림 제외, 글 답변만) */
+window.exportCSV=function(){
+  if(!LAST_ITEMS.length){toast("내보낼 제출이 없어요");return;}
+  const esc=v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`;
+  const head=["학년","반","번호","이름","완료도","차별_기분","차별_옳은가","인물관계",
+    "인물","사건","배경","명함1","명함2","명함3","편지받는이","편지","이어질Q1","이어질Q2","제출시각"];
+  const rows=LAST_ITEMS.map(d=>{
+    const cd=(d.nameCards||[]).map(c=>`${c.name||""}/${c.personality||""}/${c.action||""}`);
+    const c=completion(d);
+    return [d.grade,d.cls,d.num,d.name,`${c.done}/7`,d.feel,d.fair,d.relations,
+      d.characters,d.events,d.setting,cd[0]||"",cd[1]||"",cd[2]||"",d.letterTo,d.letter,
+      d.next1,d.next2,d.updatedAt?new Date(d.updatedAt).toLocaleString("ko-KR"):""].map(esc).join(",");
+  });
+  const csv="﻿"+[head.map(esc).join(","),...rows].join("\r\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download="몬스터차일드_제출_"+new Date().toISOString().slice(0,10)+".csv"; a.click();
+  toast("CSV를 내려받았어요");
+};
+function block(q,a){return `<div class="detail-block"><div class="q">${q}</div><div class="a">${a||"—"}</div></div>`;}
+function imgBlock(q,url){return url?`<div class="detail-block"><div class="q">${q}</div><img src="${url}"></div>`:"";}
+window.showDetail=function(d){
+  $("teacherPanel").classList.add("hidden");
+  $("detailCard").classList.remove("hidden");
+  const exps=["말 못할 비밀","다가가기 어려운 친구","바꿀수없는점으로 자기혐오","다른 친구와 거리둠","변한 모습 상상"];
+  const checked=(d.experiences||[]).map((v,i)=>v?`<span class="pill">${exps[i]}</span>`:"").join("")||"—";
+  const cards=(d.nameCards||[]).map((c,i)=>`<div class="detail-block"><div class="q">명함 ${i+1}</div>
+     <div class="a"><b>${c.name||"—"}</b> · 성격: ${c.personality||"—"}<br>행동: ${c.action||"—"}</div></div>`).join("");
+  $("detailBody").innerHTML=`
+    <h2 style="margin:0 0 4px">${d.grade}-${d.cls}반 ${d.num}번 ${d.name}</h2>
+    <div class="detail-block"><div class="q">1. 경험 체크</div><div class="a">${checked}</div></div>
+    ${block("&nbsp;&nbsp;· 차별당하면 드는 기분",d.feel)}
+    ${block("&nbsp;&nbsp;· 차별은 옳은가",d.fair)}
+    ${block("2. 인물 관계",d.relations)}
+    ${block("3. 인물",d.characters)}${block("3. 사건",d.events)}${block("3. 배경",d.setting)}
+    <div class="detail-block"><div class="q">4. 인물 명함</div></div>${cards}
+    ${imgBlock("5. 변이한 모습 그림",d.drawingMutation)}
+    ${block("6. 편지 · 받는이: "+(d.letterTo||"—"),d.letter)}
+    ${block("7. Q1 사람들은 MCS 환자를…",d.next1)}${block("7. Q2 강박사·연우·승아는…",d.next2)}
+    ${imgBlock("7. 이어질 내용 그림",d.drawingNext)}`;
+  window.scrollTo(0,0);
+};
+window.closeDetail=function(){
+  $("detailCard").classList.add("hidden");
+  $("teacherPanel").classList.remove("hidden");
+};
+</script>
+</body>
+</html>
