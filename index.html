@@ -29,8 +29,8 @@
     display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
   .card p.desc{color:var(--muted);font-size:14px;margin:2px 0 14px}
   label{font-size:14px;font-weight:600;display:block;margin:12px 0 6px}
-  input[type=text],textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;
-    font-size:15px;font-family:inherit;background:#fdfcfa;color:var(--ink)}
+  input[type=text],input[type=password],textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:15px;font-family:inherit;background:#fdfcfa;color:var(--ink)}
   textarea{resize:vertical;min-height:80px}
   .row{display:flex;gap:10px;flex-wrap:wrap}
   .row > div{flex:1;min-width:120px}
@@ -50,6 +50,8 @@
     font-weight:700;cursor:pointer;width:100%}
   .primary:disabled{opacity:.5;cursor:not-allowed}
   .ghost{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 16px;cursor:pointer;font-size:14px}
+  .danger{background:#fdeee7;border:1px solid #f0c3ab;color:var(--warn);border-radius:10px;padding:8px 12px;
+    cursor:pointer;font-size:13px;flex:0 0 auto}
   .banner{border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:16px}
   .banner.warn{background:#fdeee7;border:1px solid #f0c3ab;color:var(--warn)}
   .banner.ok{background:#e7f6ef;border:1px solid #b5e0cc;color:var(--ok)}
@@ -59,13 +61,11 @@
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2b2b33;color:#fff;
     padding:12px 20px;border-radius:30px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:99}
   .toast.show{opacity:1}
-  /* teacher */
   .sub-list{display:flex;flex-direction:column;gap:8px}
-  .sub-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);
-    border-radius:10px;padding:12px 14px;cursor:pointer;background:#fff}
-  .sub-item:hover{background:#faf7fd}
-  .sub-item .who{font-weight:600}
-  .sub-item .when{font-size:12px;color:var(--muted)}
+  .sub-item{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;background:#fff}
+  .sub-item .who{font-weight:600;cursor:pointer;flex:1}
+  .sub-item .when{font-size:12px;color:var(--muted);font-weight:400;display:block;margin-top:2px}
   .detail-block{border-top:1px solid var(--line);padding:12px 0}
   .detail-block .q{font-weight:600;font-size:14px;color:var(--accent)}
   .detail-block .a{white-space:pre-wrap;font-size:14px;margin-top:4px}
@@ -93,15 +93,49 @@
 </header>
 
 <main>
-  <!-- ===== 설정 경고 ===== -->
   <div id="configWarn" class="banner warn hidden">
-    ⚠️ Firebase 설정이 아직 입력되지 않았습니다. 파일 상단 <code class="k">firebaseConfig</code> 값을 채우면 저장이 켜집니다.
+    ⚠️ Firebase 설정이 아직 입력되지 않았습니다. 파일 상단 <code class="k">firebaseConfig</code> 값을 채우면 로그인·저장이 켜집니다.
     지금은 <b>연습 모드</b>로, 작성은 되지만 서버에 저장되지 않습니다.
   </div>
 
   <!-- ============ 학생 화면 ============ -->
   <section id="studentView">
-    <!-- 표지/소개 -->
+    <!-- 로그인 -->
+    <div class="card" id="loginCard">
+      <h2>🔑 입장하기</h2>
+      <p class="desc">학년·반·번호와 비밀번호로 들어갑니다. 처음이라면 여기서 정한 비밀번호가 <b>내 비밀번호</b>가 돼요.</p>
+      <div class="row">
+        <div><input type="text" id="s_grade" placeholder="학년 (예: 6)" /></div>
+        <div><input type="text" id="s_class" placeholder="반 (예: 3)" /></div>
+        <div><input type="text" id="s_num" placeholder="번호 (예: 12)" /></div>
+      </div>
+      <label>이름</label>
+      <input type="text" id="s_name" placeholder="이름을 적어 주세요" />
+      <label>비밀번호</label>
+      <input type="password" id="s_pw" placeholder="비밀번호 (숫자·글자 모두 가능)" />
+      <button class="primary" style="margin-top:16px" onclick="doLogin()">입장하기</button>
+      <div id="loginMsg" class="banner info hidden" style="margin-top:12px"></div>
+    </div>
+
+    <!-- 로그인 후 활동 영역 -->
+    <div id="studentApp" class="hidden">
+    <div class="card" id="userBar">
+      <div class="row" style="align-items:center">
+        <div style="flex:2"><b id="whoami"></b> 님, 환영해요!</div>
+        <div style="flex:0;display:flex;gap:6px">
+          <button class="ghost" onclick="toggleChangePw()">비밀번호 변경</button>
+          <button class="ghost" onclick="logout()">로그아웃</button>
+        </div>
+      </div>
+      <div id="changePwBox" class="hidden" style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+        <label>새 비밀번호</label>
+        <input type="password" id="newPw" placeholder="새 비밀번호" />
+        <label>새 비밀번호 확인</label>
+        <input type="password" id="newPw2" placeholder="한 번 더 입력" />
+        <button class="ghost" style="margin-top:10px" onclick="changeMyPassword()">변경 저장</button>
+      </div>
+    </div>
+
     <div class="card">
       <h2>몬스터 차일드 이야기</h2>
       <p class="desc" style="margin-bottom:8px">
@@ -112,15 +146,6 @@
         “남들이 나를 뭐라고 부르든 상관없어. 나는 그냥 나, 오하늬니까.”
       </p>
       <p class="desc">돌연변이종양 증후군을 가진 아이, 하늬의 이야기를 읽고 아래 활동을 해 봅시다.</p>
-
-      <label>학년</label>
-      <div class="row">
-        <div><input type="text" id="s_grade" placeholder="학년 (예: 6)" /></div>
-        <div><input type="text" id="s_class" placeholder="반 (예: 3)" /></div>
-        <div><input type="text" id="s_num" placeholder="번호 (예: 12)" /></div>
-      </div>
-      <label>이름</label>
-      <input type="text" id="s_name" placeholder="이름을 적어 주세요" />
     </div>
 
     <!-- 1. 경험 떠올리기 -->
@@ -204,32 +229,38 @@
 
     <div class="card" style="text-align:center">
       <button class="primary" id="btnSave" onclick="submitWork()">📨 제출하기 (저장)</button>
-      <p class="desc" style="margin-top:10px">제출 후에도 같은 학년·반·번호로 다시 열면 이어서 쓸 수 있어요.</p>
-      <button class="ghost" style="margin-top:6px" onclick="loadMyWork()">내 작성 내용 불러오기</button>
+      <p class="desc" style="margin-top:10px">제출 후 다시 로그인하면 이어서 쓸 수 있어요.</p>
     </div>
+    </div><!-- /studentApp -->
   </section>
 
   <!-- ============ 교사 화면 ============ -->
   <section id="teacherView" class="hidden">
     <div class="card">
-      <h2>👩‍🏫 교사 취합</h2>
-      <p class="desc">학생들이 제출한 활동을 한눈에 모아 봅니다.</p>
+      <h2>👩‍🏫 교사 관리</h2>
+      <p class="desc">학생 제출을 모아 보고, 계정을 관리합니다.</p>
       <div id="teacherGate">
-        <label>교사 암호</label>
-        <input type="text" id="teacherPw" placeholder="암호 입력" />
+        <label>교사(관리자) 비밀번호</label>
+        <input type="password" id="teacherPw" placeholder="비밀번호 입력" />
         <button class="ghost" style="margin-top:10px" onclick="teacherLogin()">열기</button>
-        <p class="desc" style="margin-top:6px">기본 암호는 파일 상단 <code class="k">TEACHER_PASSWORD</code> 에서 바꿀 수 있어요.</p>
+        <p class="desc" style="margin-top:6px">최초 비밀번호는 파일 상단 <code class="k">DEFAULT_ADMIN_PASSWORD</code> 값이며, 로그인 후 바꿀 수 있어요.</p>
       </div>
       <div id="teacherPanel" class="hidden">
         <div class="row" style="align-items:center;margin-bottom:6px">
           <div style="flex:2"><b id="subCount">0</b>명 제출</div>
-          <div style="flex:0;display:flex;gap:6px">
+          <div style="flex:0;display:flex;gap:6px;flex-wrap:wrap">
+            <button class="ghost" onclick="toggleAdminPw()">관리자 비번 변경</button>
             <button class="ghost" onclick="exportCSV()">CSV 내보내기</button>
             <button class="ghost" onclick="refreshSubs()">새로고침</button>
           </div>
         </div>
+        <div id="adminPwBox" class="hidden" style="margin:4px 0 12px;border:1px solid var(--line);border-radius:10px;padding:12px;background:#faf8f4">
+          <label style="margin-top:0">새 관리자 비밀번호</label>
+          <input type="password" id="adminNewPw" placeholder="새 비밀번호" />
+          <button class="ghost" style="margin-top:10px" onclick="changeAdminPassword()">변경 저장</button>
+        </div>
         <div id="classSummary"></div>
-        <label style="margin-top:14px">제출 현황 (누르면 상세)</label>
+        <label style="margin-top:14px">제출 현황 (이름을 누르면 상세 · 초기화 버튼으로 비번 재설정)</label>
         <div class="sub-list" id="subList" style="margin-top:6px"></div>
       </div>
     </div>
@@ -242,15 +273,14 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ================= Firebase + 앱 로직 ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy }
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, orderBy }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ============================================================
-   ① 여기에 Firebase 콘솔에서 받은 config를 붙여넣으세요.
-      (안내문서 참고: firebase-설정안내.md)
+   ① Firebase 콘솔에서 받은 config를 붙여넣으세요.
+      (안내문서: firebase-설정안내.md)
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyC0emf8IidWBX8rySMQVhhB0kZet7yz3HI",
@@ -262,8 +292,8 @@ const firebaseConfig = {
   measurementId: "G-1W8KQH0QBR"
 };
 
-/* ② 교사 암호 (원하는 값으로 변경) */
-const TEACHER_PASSWORD = "monster";
+/* ② 관리자(교사) 최초 비밀번호 — 로그인 후 화면에서 바꿀 수 있음 */
+const DEFAULT_ADMIN_PASSWORD = "monster";
 /* ================================================================ */
 
 const CONFIGURED = !String(firebaseConfig.apiKey).includes("여기에");
@@ -280,8 +310,15 @@ const $ = id => document.getElementById(id);
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show");
   setTimeout(()=>t.classList.remove("show"),2200); }
 const CHARACTERS = ["오하늬","강연우","강박사(소장님)"];
+let CURRENT = null; // {grade,cls,num,name}
 
-/* ---------- 인물 명함 3장 렌더 ---------- */
+async function sha256(str){
+  const buf=await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function accId(g,c,n){ return `${g}-${c}-${n}`.replace(/[/#.$\[\]]/g,"_"); }
+
+/* ---------- 인물 명함 렌더 ---------- */
 const cardsWrap = $("cards");
 CHARACTERS.forEach((nm,i)=>{
   const d=document.createElement("div"); d.className="namecard";
@@ -297,15 +334,14 @@ $("q_letter_to").addEventListener("change",e=>{
   $("q_letter_to_custom").classList.toggle("hidden", e.target.value!=="직접 입력");
 });
 
-/* ---------- 캔버스 그리기 ---------- */
+/* ---------- 캔버스 ---------- */
 const COLORS=["#2b2b33","#c4562f","#e0a91b","#2f9e6f","#3f6fd8","#a06bd6","#ffffff"];
 function setupCanvas(id){
   const cv=$(id), ctx=cv.getContext("2d");
   ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height);
   ctx.lineCap="round"; ctx.lineJoin="round";
   let drawing=false, color="#2b2b33", size=4;
-  const pos=e=>{const r=cv.getBoundingClientRect();
-    const p=e.touches?e.touches[0]:e;
+  const pos=e=>{const r=cv.getBoundingClientRect();const p=e.touches?e.touches[0]:e;
     return {x:(p.clientX-r.left)*(cv.width/r.width), y:(p.clientY-r.top)*(cv.height/r.height)};};
   const start=e=>{drawing=true;const{x,y}=pos(e);ctx.strokeStyle=color;ctx.lineWidth=size;
     ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();};
@@ -316,7 +352,6 @@ function setupCanvas(id){
   cv.addEventListener("touchstart",start,{passive:false});
   cv.addEventListener("touchmove",move,{passive:false});
   cv.addEventListener("touchend",end);
-  // 도구 UI
   const bar=document.querySelector(`.tools[data-canvas="${id}"]`);
   COLORS.forEach((c,idx)=>{const s=document.createElement("button");s.className="swatch"+(idx===0?" sel":"");
     s.style.background=c; if(c==="#ffffff")s.style.border="1px solid #ccc";
@@ -327,7 +362,8 @@ function setupCanvas(id){
   const clr=document.createElement("button");clr.textContent="전체 지우기";
   clr.onclick=()=>{ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);};
   bar.appendChild(clr);
-  return {isBlank:()=>false, data:()=>cv.toDataURL("image/png"),
+  return {clear:()=>{ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);},
+    data:()=>cv.toDataURL("image/png"),
     load:url=>{if(!url)return;const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,cv.width,cv.height);im.src=url;}};
 }
 const canvasMut=setupCanvas("canvasMut");
@@ -341,8 +377,7 @@ function collectData(){
   let letterTo=$("q_letter_to").value;
   if(letterTo==="직접 입력") letterTo=$("q_letter_to_custom").value;
   return {
-    grade:$("s_grade").value.trim(), cls:$("s_class").value.trim(),
-    num:$("s_num").value.trim(), name:$("s_name").value.trim(),
+    grade:CURRENT.grade, cls:CURRENT.cls, num:CURRENT.num, name:CURRENT.name,
     experiences:exp, feel:$("q_feel").value, fair:$("q_fair").value,
     relations:$("q_rel").value,
     characters:$("q_char").value, events:$("q_event").value, setting:$("q_setting").value,
@@ -355,8 +390,6 @@ function collectData(){
   };
 }
 function fillData(d){
-  $("s_grade").value=d.grade||""; $("s_class").value=d.cls||"";
-  $("s_num").value=d.num||""; $("s_name").value=d.name||"";
   (d.experiences||[]).forEach((v,i)=>{const c=document.querySelector(`[data-exp="${i}"]`);if(c)c.checked=v;});
   $("q_feel").value=d.feel||""; $("q_fair").value=d.fair||"";
   $("q_rel").value=d.relations||"";
@@ -371,30 +404,90 @@ function fillData(d){
   $("q_next1").value=d.next1||""; $("q_next2").value=d.next2||"";
   canvasNext.load(d.drawingNext);
 }
-function docId(d){ return `${d.grade}-${d.cls}-${d.num}-${d.name}`.replace(/[/#.$\[\]]/g,"_"); }
+function resetForm(){
+  document.querySelectorAll("[data-exp]").forEach(c=>c.checked=false);
+  ["q_feel","q_fair","q_rel","q_char","q_event","q_setting","q_letter","q_next1","q_next2","q_letter_to_custom"]
+    .forEach(id=>$(id).value="");
+  $("q_letter_to").value="";
+  document.querySelectorAll("[data-card]").forEach(el=>{ if(el.dataset.f!=="name") el.value=""; });
+  canvasMut.clear(); canvasNext.clear();
+}
 
-/* ---------- 학생: 저장 ---------- */
+/* ================= 학생 로그인 / 비밀번호 ================= */
+window.doLogin=async function(){
+  const g=$("s_grade").value.trim(), c=$("s_class").value.trim(),
+        n=$("s_num").value.trim(), nm=$("s_name").value.trim(), pw=$("s_pw").value;
+  const msg=$("loginMsg");
+  const show=(t,cls="info")=>{msg.className="banner "+cls;msg.textContent=t;msg.classList.remove("hidden");};
+  if(!g||!c||!n||!nm){show("학년·반·번호·이름을 모두 채워 주세요.","warn");return;}
+  if(!pw){show("비밀번호를 입력해 주세요.","warn");return;}
+
+  if(!CONFIGURED){ // 연습 모드: 인증 없이 입장
+    CURRENT={grade:g,cls:c,num:n,name:nm}; enterApp(); toast("연습 모드로 입장 (저장 안 됨)"); return;
+  }
+  const id=accId(g,c,n), hash=await sha256(pw);
+  try{
+    const ref=doc(db,"accounts",id), snap=await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref,{grade:g,cls:c,num:n,name:nm,hash,createdAt:new Date().toISOString()});
+      CURRENT={grade:g,cls:c,num:n,name:nm}; enterApp(); toast("처음 오셨네요! 비밀번호가 설정되었어요 🎉"); return;
+    }
+    const acc=snap.data();
+    if(acc.hash!==hash){show("비밀번호가 맞지 않아요. 다시 확인해 주세요.","warn");return;}
+    if(acc.name!==nm){ try{await updateDoc(ref,{name:nm});}catch(e){} }
+    CURRENT={grade:g,cls:c,num:n,name:nm};
+    enterApp();
+    await loadMyWork();
+    toast("입장 완료!");
+  }catch(e){console.error(e);show("로그인 실패: "+e.message,"warn");}
+};
+function enterApp(){
+  $("whoami").textContent=`${CURRENT.grade}-${CURRENT.cls}반 ${CURRENT.num}번 ${CURRENT.name}`;
+  $("loginCard").classList.add("hidden");
+  $("studentApp").classList.remove("hidden");
+  $("s_pw").value="";
+  window.scrollTo(0,0);
+}
+window.logout=function(){
+  CURRENT=null; resetForm();
+  $("studentApp").classList.add("hidden");
+  $("loginCard").classList.remove("hidden");
+  $("loginMsg").classList.add("hidden");
+  $("changePwBox").classList.add("hidden");
+};
+window.toggleChangePw=function(){ $("changePwBox").classList.toggle("hidden"); };
+window.changeMyPassword=async function(){
+  if(!CURRENT) return;
+  const p1=$("newPw").value, p2=$("newPw2").value;
+  if(!p1){toast("새 비밀번호를 입력해 주세요");return;}
+  if(p1!==p2){toast("두 비밀번호가 서로 달라요");return;}
+  if(!CONFIGURED){toast("연습 모드에서는 저장되지 않아요");return;}
+  try{
+    await updateDoc(doc(db,"accounts",accId(CURRENT.grade,CURRENT.cls,CURRENT.num)),{hash:await sha256(p1)});
+    $("newPw").value="";$("newPw2").value="";$("changePwBox").classList.add("hidden");
+    toast("비밀번호가 바뀌었어요");
+  }catch(e){console.error(e);toast("변경 실패: "+e.message);}
+};
+
+/* ---------- 학생: 저장 / 불러오기 ---------- */
 window.submitWork=async function(){
+  if(!CURRENT){toast("먼저 로그인해 주세요");return;}
   const d=collectData();
-  if(!d.grade||!d.cls||!d.num||!d.name){toast("학년·반·번호·이름을 먼저 채워 주세요");return;}
   if(!CONFIGURED){toast("연습 모드: 작성은 되지만 저장은 안 돼요");return;}
   const btn=$("btnSave"); btn.disabled=true; btn.textContent="저장 중…";
   try{
-    await setDoc(doc(db,"submissions",docId(d)), d);
+    await setDoc(doc(db,"submissions",accId(d.grade,d.cls,d.num)), d);
     toast("제출 완료! 잘 저장되었어요 🎉");
   }catch(e){console.error(e);toast("저장 실패: "+e.message);}
   btn.disabled=false; btn.textContent="📨 제출하기 (저장)";
 };
-window.loadMyWork=async function(){
-  const g=$("s_grade").value.trim(),c=$("s_class").value.trim(),n=$("s_num").value.trim(),nm=$("s_name").value.trim();
-  if(!g||!c||!n||!nm){toast("학년·반·번호·이름을 먼저 채워 주세요");return;}
-  if(!CONFIGURED){toast("연습 모드에서는 불러올 수 없어요");return;}
+async function loadMyWork(){
+  if(!CURRENT||!CONFIGURED) return;
   try{
-    const snap=await getDoc(doc(db,"submissions",docId({grade:g,cls:c,num:n,name:nm})));
-    if(snap.exists()){fillData(snap.data());toast("불러왔어요!");}
-    else toast("저장된 내용이 없어요");
-  }catch(e){console.error(e);toast("불러오기 실패: "+e.message);}
-};
+    const snap=await getDoc(doc(db,"submissions",accId(CURRENT.grade,CURRENT.cls,CURRENT.num)));
+    if(snap.exists()) fillData(snap.data());
+  }catch(e){console.error(e);}
+}
 
 /* ---------- 모드 전환 ---------- */
 window.setMode=function(m){
@@ -405,29 +498,58 @@ window.setMode=function(m){
   $("btnTeacher").classList.toggle("active",!st);
 };
 
-/* ---------- 교사 ---------- */
-window.teacherLogin=function(){
-  if($("teacherPw").value!==TEACHER_PASSWORD){toast("암호가 달라요");return;}
+/* ================= 교사(관리자) ================= */
+async function getAdminHash(){
+  if(!CONFIGURED) return null;
+  const ref=doc(db,"config","admin"), snap=await getDoc(ref);
+  if(snap.exists()) return snap.data().hash;
+  const h=await sha256(DEFAULT_ADMIN_PASSWORD);
+  try{ await setDoc(ref,{hash:h}); }catch(e){}
+  return h;
+}
+window.teacherLogin=async function(){
+  const pw=$("teacherPw").value;
+  if(!CONFIGURED){
+    if(pw===DEFAULT_ADMIN_PASSWORD){openTeacher();} else toast("비밀번호가 달라요"); return;
+  }
+  try{
+    const stored=await getAdminHash();
+    if(await sha256(pw)!==stored){toast("비밀번호가 달라요");return;}
+    openTeacher();
+  }catch(e){console.error(e);toast("확인 실패: "+e.message);}
+};
+function openTeacher(){
   $("teacherGate").classList.add("hidden");
   $("teacherPanel").classList.remove("hidden");
+  $("teacherPw").value="";
   refreshSubs();
+}
+window.toggleAdminPw=function(){ $("adminPwBox").classList.toggle("hidden"); };
+window.changeAdminPassword=async function(){
+  const p=$("adminNewPw").value;
+  if(!p){toast("새 비밀번호를 입력해 주세요");return;}
+  if(!CONFIGURED){toast("연습 모드에서는 저장되지 않아요");return;}
+  try{
+    await setDoc(doc(db,"config","admin"),{hash:await sha256(p)});
+    $("adminNewPw").value="";$("adminPwBox").classList.add("hidden");
+    toast("관리자 비밀번호가 바뀌었어요");
+  }catch(e){console.error(e);toast("변경 실패: "+e.message);}
 };
+
 let LAST_ITEMS=[];
-/* 7개 활동 완료도 계산 */
 function completion(d){
   const t=s=>s&&String(s).trim().length>0;
   const done=[
-    (d.experiences||[]).some(Boolean)||t(d.feel)||t(d.fair),   // 1
-    t(d.relations),                                            // 2
-    t(d.characters)||t(d.events)||t(d.setting),                // 3
-    (d.nameCards||[]).some(c=>t(c.personality)||t(c.action)),  // 4
-    d.drawingMutation&&!isBlankImg(d.drawingMutation),         // 5
-    t(d.letter),                                               // 6
-    t(d.next1)||t(d.next2)||(d.drawingNext&&!isBlankImg(d.drawingNext)) // 7
+    (d.experiences||[]).some(Boolean)||t(d.feel)||t(d.fair),
+    t(d.relations),
+    t(d.characters)||t(d.events)||t(d.setting),
+    (d.nameCards||[]).some(c=>t(c.personality)||t(c.action)),
+    d.drawingMutation&&!isBlankImg(d.drawingMutation),
+    t(d.letter),
+    t(d.next1)||t(d.next2)||(d.drawingNext&&!isBlankImg(d.drawingNext))
   ];
-  return {done:done.filter(Boolean).length,total:7,flags:done};
+  return {done:done.filter(Boolean).length,total:7};
 }
-/* 흰 캔버스면 미완성으로 취급 (dataURL 길이가 매우 짧음) */
 function isBlankImg(url){ return !url || url.length < 3000; }
 
 window.refreshSubs=async function(){
@@ -440,26 +562,36 @@ window.refreshSubs=async function(){
     $("subCount").textContent=items.length;
     list.innerHTML="";
     if(!items.length){list.innerHTML='<p class="desc">아직 제출한 학생이 없어요.</p>';return;}
-    // 반별 요약
     const byClass={};
     items.forEach(d=>{const k=`${d.grade}-${d.cls}`;(byClass[k]=byClass[k]||[]).push(d);});
-    const cells=Object.entries(byClass).map(([k,arr])=>{
-      const avg=Math.round(arr.reduce((s,d)=>s+completion(d).done,0)/arr.length/7*100);
-      return `<div class="sum-cell"><b>${k}반</b><br>${arr.length}명 · 평균 ${avg}%</div>`;}).join("");
-    $("classSummary").innerHTML=`<div class="sum-grid">${cells}</div>`;
-    // 학생 목록 (완료도 표시)
+    $("classSummary").innerHTML=`<div class="sum-grid">${
+      Object.entries(byClass).map(([k,arr])=>{
+        const avg=Math.round(arr.reduce((s,d)=>s+completion(d).done,0)/arr.length/7*100);
+        return `<div class="sum-cell"><b>${k}반</b><br>${arr.length}명 · 평균 ${avg}%</div>`;}).join("")}</div>`;
     items.forEach(d=>{
       const c=completion(d), pct=Math.round(c.done/c.total*100);
       const el=document.createElement("div");el.className="sub-item";
       const when=d.updatedAt?new Date(d.updatedAt).toLocaleString("ko-KR"):"";
-      el.innerHTML=`<span class="who">${d.grade}-${d.cls}반 ${d.num}번 ${d.name}</span>
+      const who=document.createElement("div");who.className="who";
+      who.innerHTML=`${d.grade}-${d.cls}반 ${d.num}번 ${d.name}
         <span class="when"><span class="prog"><i style="width:${pct}%"></i></span> ${c.done}/7 · ${when}</span>`;
-      el.onclick=()=>showDetail(d); list.appendChild(el);
+      who.onclick=()=>showDetail(d);
+      const btn=document.createElement("button");btn.className="danger";btn.textContent="비번 초기화";
+      btn.onclick=()=>resetPassword(d);
+      el.appendChild(who); el.appendChild(btn); list.appendChild(el);
     });
   }catch(e){console.error(e);list.innerHTML='<p class="banner warn">불러오기 실패: '+e.message+'</p>';}
 };
 
-/* CSV 내보내기 (그림 제외, 글 답변만) */
+/* 학생 비밀번호 초기화 = 계정 삭제 → 다음 로그인 때 새 비번을 다시 설정 */
+window.resetPassword=async function(d){
+  if(!confirm(`${d.num}번 ${d.name} 학생의 비밀번호를 초기화할까요?\n다음 입장 시 학생이 새 비밀번호를 다시 정하게 됩니다.`)) return;
+  try{
+    await deleteDoc(doc(db,"accounts",accId(d.grade,d.cls,d.num)));
+    toast(`${d.name} 비밀번호를 초기화했어요`);
+  }catch(e){console.error(e);toast("초기화 실패: "+e.message);}
+};
+
 window.exportCSV=function(){
   if(!LAST_ITEMS.length){toast("내보낼 제출이 없어요");return;}
   const esc=v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`;
@@ -478,8 +610,9 @@ window.exportCSV=function(){
   a.download="몬스터차일드_제출_"+new Date().toISOString().slice(0,10)+".csv"; a.click();
   toast("CSV를 내려받았어요");
 };
+
 function block(q,a){return `<div class="detail-block"><div class="q">${q}</div><div class="a">${a||"—"}</div></div>`;}
-function imgBlock(q,url){return url?`<div class="detail-block"><div class="q">${q}</div><img src="${url}"></div>`:"";}
+function imgBlock(q,url){return url&&!isBlankImg(url)?`<div class="detail-block"><div class="q">${q}</div><img src="${url}"></div>`:"";}
 window.showDetail=function(d){
   $("teacherPanel").classList.add("hidden");
   $("detailCard").classList.remove("hidden");
